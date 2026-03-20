@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>程曦資訊 - AI數位競爭力掃描</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- 更新 Lucide Icons 的 CDN 連結為最新的 UMD 版本 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 引入 Chart.js 用於繪製五角雷達圖 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #020617; /* 更深邃的宇宙黑藍色 */
+            color: #ffffff;
+            overflow: hidden; 
+        }
+        .font-tech {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* 動態漂移閃爍星空 */
+        .star-field {
+            position: absolute;
+            top: -50%; left: -50%; right: -50%; bottom: -50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .star-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-repeat: repeat;
+        }
+        /* 遠景小星 */
+        .layer-1 {
+            background-image: radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.8), rgba(0,0,0,0)), radial-gradient(1px 1px at 150px 100px, rgba(255,255,255,0.6), rgba(0,0,0,0)), radial-gradient(1px 1px at 250px 200px, rgba(255,255,255,0.4), rgba(0,0,0,0));
+            background-size: 300px 300px;
+            animation: drift 100s linear infinite, twinkle 4s ease-in-out infinite alternate;
+        }
+        /* 中景中星 */
+        .layer-2 {
+            background-image: radial-gradient(1.5px 1.5px at 40px 70px, rgba(0,180,216,0.9), rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 200px 150px, rgba(255,255,255,0.7), rgba(0,0,0,0));
+            background-size: 400px 400px;
+            animation: drift 70s linear infinite, twinkle 3s ease-in-out infinite alternate-reverse;
+        }
+        /* 近景大星 (較少) */
+        .layer-3 {
+            background-image: radial-gradient(2px 2px at 90px 40px, rgba(202,240,248,1), rgba(0,0,0,0)), radial-gradient(2.5px 2.5px at 300px 250px, rgba(0,180,216,1), rgba(0,0,0,0));
+            background-size: 500px 500px;
+            animation: drift 40s linear infinite, twinkle 5s ease-in-out infinite alternate;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-10%, -10%) rotate(2deg); }
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; box-shadow: 0 0 10px rgba(0,180,216,0.5); }
+            100% { opacity: 0.5; }
+        }
+
+        /* 旋轉科技環特效 */
+        .tech-ring-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140vw; height: 140vw;
+            max-width: 900px; max-height: 900px;
+            z-index: 1; pointer-events: none; opacity: 0.12;
+        }
+        .ring-outer {
+            position: absolute; inset: 0;
+            border: 2px dashed #00b4d8; border-radius: 50%;
+            animation: spinRight 60s linear infinite;
+        }
+        .ring-inner {
+            position: absolute; inset: 15%;
+            border: 1px solid rgba(144,224,239,0.3); border-radius: 50%;
+            border-top: 4px solid #0077b6;
+            animation: spinLeft 35s linear infinite;
+        }
+
+        @keyframes spinRight { 100% { transform: rotate(360deg); } }
+        @keyframes spinLeft { 100% { transform: rotate(-360deg); } }
+
+        /* 漸層與發光元件 */
+        .text-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #00b4d8 50%, #0077b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .btn-cyan {
+            background: linear-gradient(90deg, #0077b6, #00b4d8);
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-cyan:hover { box-shadow: 0 6px 20px rgba(0, 180, 216, 0.6); transform: translateY(-2px); }
+        .btn-cyan:active { transform: translateY(0); }
+
+        .glass-panel {
+            background: rgba(10, 17, 40, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* 表單輸入框樣式 */
+        .tech-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .tech-input:focus { border-color: #00b4d8; box-shadow: 0 0 10px rgba(0,180,216,0.3); }
+        .tech-input::placeholder { color: rgba(255,255,255,0.3); }
+
+        /* 個資 Checkbox 特效 */
+        .tech-checkbox {
+            appearance: none;
+            width: 1.25rem; height: 1.25rem;
+            border: 1px solid #00b4d8;
+            border-radius: 0.25rem;
+            background: transparent;
+            display: inline-flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+        .tech-checkbox:checked { background: #00b4d8; }
+        .tech-checkbox:checked::after {
+            content: '✓'; color: #020617; font-weight: bold; font-size: 0.8rem;
+        }
+
+        /* 雷達特效 */
+        .radar-box {
+            position: relative; width: 220px; height: 220px;
+            border-radius: 50%; border: 2px solid rgba(0, 180, 216, 0.2);
+            box-shadow: 0 0 40px rgba(0,180,216,0.2) inset;
+        }
+        .radar-box::after {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 110px; height: 110px;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(0, 180, 216, 0.8) 100%);
+            transform-origin: 0 0;
+            animation: radarSpin 1.5s linear infinite;
+        }
+        @keyframes radarSpin { 100% { transform: rotate(360deg); } }
+
+        /* 指紋上下掃描線特效 */
+        @keyframes scanLineVertical { 
+            0% { top: -10%; opacity: 0; } 
+            15% { opacity: 1; } 
+            85% { opacity: 1; } 
+            100% { top: 110%; opacity: 0; } 
+        }
+
+        /* 視圖切換 */
+        .view-hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="relative w-full h-screen bg-gradient-to-br from-[#020617] via-[#081836] to-[#010a17]">
+
+    <!-- 動態背景層 -->
+    <div class="star-field">
+        <div class="star-layer layer-1"></div>
+        <div class="star-layer layer-2"></div>
+        <div class="star-layer layer-3"></div>
+    </div>
+    <div class="tech-ring-container">
+        <div class="ring-outer"></div>
+        <div class="ring-inner"></div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="relative z-10 w-full max-w-md mx-auto h-full flex flex-col p-6">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center w-full pt-2 fade-in">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="cpu" class="text-[#00b4d8]"></i>
+                <span class="font-bold text-lg tracking-wider">程曦資訊集團</span>
+            </div>
+            <div class="text-[10px] border border-[#00b4d8]/50 text-[#00b4d8] px-2 py-1 rounded font-tech bg-[#00b4d8]/10 backdrop-blur-sm">
+                2026 SMART CITY EXPO
+            </div>
+        </header>
+
+        <!-- 【第一層】首頁 (大字體視覺破冰) -->
+        <main id="view-home" class="flex-1 flex flex-col justify-center items-center text-center fade-in">
+            <div class="w-full flex flex-col items-center justify-center space-y-4">
+                <h2 class="text-sm tracking-[0.4em] text-gray-400 font-tech">ENTERPRISE EMPOWERMENT</h2>
+                
+                <!-- 回歸第一版文案與排版 -->
+                <h1 class="text-4xl font-black leading-tight tracking-wider mt-2">
+                    AI 時代的<br>
+                    <span class="text-gradient text-5xl mt-2 inline-block">企業數位競爭力</span>
+                </h1>
+                
+                <p class="text-sm text-gray-300 mt-2 leading-relaxed max-w-[280px] mx-auto tracking-widest">
+                    專屬企業的 AI 顧問整合與自動化導入服務，打造實戰化職場賦能藍圖。
+                </p>
+
+                <!-- 指紋掃描觸發區 (取代原本地球與矩形按鈕) -->
+                <div onclick="goToForm()" class="relative w-48 h-48 mt-8 flex flex-col items-center justify-center cursor-pointer group">
+                    <!-- 旋轉外環 -->
+                    <div class="absolute inset-0 border border-[#00b4d8]/20 rounded-full animate-[spin_10s_linear_infinite] group-hover:border-[#00b4d8]/60 transition-colors duration-500"></div>
+                    <div class="absolute inset-3 border-t-2 border-[#00b4d8] rounded-full animate-[spin_5s_linear_infinite_reverse] shadow-[0_0_10px_rgba(0,180,216,0.3)]"></div>
+                    <div class="absolute inset-6 border-b-2 border-dashed border-[#0077b6] rounded-full animate-[spin_8s_linear_infinite]"></div>
+                    
+                    <!-- 指紋本體與雷射掃描特效 -->
+                    <div class="relative w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-b from-[#00b4d8]/5 to-transparent group-hover:from-[#00b4d8]/20 transition-all duration-500 overflow-hidden shadow-[inset_0_0_20px_rgba(0,180,216,0.1)]">
+                        <i data-lucide="fingerprint" class="w-16 h-16 text-[#00b4d8] drop-shadow-[0_0_12px_rgba(0,180,216,0.8)] group-hover:scale-110 transition-transform duration-500"></i>
+                        <!-- 掃描線 -->
+                        <div class="absolute left-0 w-full h-[2px] bg-white shadow-[0_0_15px_3px_#00b4d8] animate-[scanLineVertical_2.5s_ease-in-out_infinite]"></div>
+                    </div>
+                </div>
+
+                <!-- 純文字引導 (無外框) -->
+                <p onclick="goToForm()" class="mt-6 text-sm font-bold tracking-[0.3em] text-[#00b4d8] cursor-pointer hover:text-white transition-colors duration-300 animate-pulse">
+                    [ 一鍵觸及啟動 ]
+                </p>
+            </div>
+        </main>
+
+        <!-- 【第二層】資料填寫與 PDPA 授權 -->
+        <main id="view-form" class="view-hidden flex-1 flex flex-col justify-center items-center fade-in w-full">
+            <div class="glass-panel w-full p-6 rounded-2xl relative overflow-hidden">
+                
+                <!-- 太空艙呼吸燈特效 (右上角) - 已改為橘色 -->
+                <div class="absolute top-5 right-5 flex items-center space-x-2 z-20">
+                    <span class="text-[8px] font-tech text-orange-500/80 tracking-widest">SYS_ON</span>
+                    <div class="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)] animate-pulse"></div>
+                </div>
+
+                <!-- 裝飾光暈 -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[#00b4d8] opacity-10 blur-3xl rounded-full pointer-events-none"></div>
+
+                <h2 class="text-2xl font-black text-gradient mb-1 tracking-widest mt-1">建檔與授權</h2>
+                <p class="text-xs text-gray-400 mb-6 tracking-wider">請完成企業資訊登錄以啟動診斷</p>
+
+                <form id="lead-form" class="space-y-4" onsubmit="handleFormSubmit(event)">
+                    <div>
+                        <input type="text" id="company" required placeholder="公司全銜" class="tech-input font-bold tracking-wider">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="name" required placeholder="聯絡人姓名" class="tech-input">
+                        <input type="tel" id="phone" required placeholder="聯絡電話" class="tech-input">
+                    </div>
+                    <div>
+                        <input type="email" id="email" required placeholder="聯絡信箱" class="tech-input">
+                    </div>
+
+                    <!-- PDPA 個資同意區塊 -->
+                    <div class="mt-6 p-4 bg-black/30 border border-gray-600/50 rounded-lg">
+                        <label class="flex items-start space-x-3 cursor-pointer group">
+                            <input type="checkbox" id="pdpa" required class="tech-checkbox">
+                            <span class="text-[11px] text-gray-300 leading-relaxed text-justify group-hover:text-white transition-colors">
+                                我已詳閱並同意<span class="text-[#00b4d8]">【個人資料保護聲明】</span>：授權程曦資訊集團蒐集、處理及利用本人填寫之資料，作為本次展會聯繫、後續 AI 企業數位培訓課程推廣、企業顧問服務，以及相關政府部門專案通知等合法商業目的之用。
+                            </span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full btn-cyan text-white font-bold py-3.5 rounded-lg text-sm tracking-widest mt-4 flex items-center justify-center space-x-2">
+                        <i data-lucide="check-circle"></i>
+                        <span>同意授權並開始運算</span>
+                    </button>
+                </form>
+                
+                <button onclick="goToHome()" class="w-full text-center text-xs text-gray-500 mt-4 hover:text-white tracking-widest">
+                    ← 返回上一頁
+                </button>
+            </div>
+        </main>
+
+        <!-- 【第三層】掃描運算中 -->
+        <main id="view-scanning" class="view-hidden flex-1 flex flex-col justify-center items-center text-center space-y-8">
+            <h2 class="text-2xl font-bold text-gradient mb-8 tracking-widest">深度分析運算中</h2>
+            <div class="radar-box flex items-center justify-center">
+                <i data-lucide="cpu" class="w-12 h-12 text-[#00b4d8] opacity-50 animate-pulse"></i>
+            </div>
+            <div class="font-tech text-[#00b4d8] text-sm mt-8 space-y-3 text-left w-56">
+                <p id="scan-text-1" class="opacity-0 tracking-widest">> 讀取產業特徵參數...</p>
+                <p id="scan-text-2" class="opacity-0 tracking-widest">> 比對 AI 職能斷層...</p>
+                <p id="scan-text-3" class="opacity-0 tracking-widest">> 生成模組化解方...</p>
+            </div>
+        </main>
+
+        <!-- 【第四層】診斷結果與解方 Pitch -->
+        <main id="view-result" class="view-hidden flex-1 flex flex-col justify-start items-center space-y-4 pt-4 overflow-y-auto pb-12 w-full">
+            <h2 class="text-2xl font-black w-full text-left tracking-widest text-gradient">企業數位體質分析</h2>
+            
+            <!-- 新增：五角雷達圖容器 -->
+            <div class="w-full max-w-[280px] aspect-square mx-auto relative">
+                <!-- 裝飾用中心光暈 -->
+                <div class="absolute inset-0 bg-[#00b4d8] opacity-[0.03] blur-xl rounded-full pointer-events-none z-0"></div>
+                <canvas id="aiRadarChart" class="relative z-10"></canvas>
+            </div>
+
+            <!-- 動態雷達圖的總評文案 -->
+            <p id="radar-summary" class="text-xs text-[#00b4d8] font-bold tracking-widest text-center w-full mb-2 animate-pulse"></p>
+
+            <div class="w-full space-y-3">
+                <div class="glass-panel p-4 rounded-lg border-l-4 border-l-red-500 flex items-start space-x-3">
+                    <i data-lucide="alert-triangle" class="text-red-400 mt-1 flex-shrink-0"></i>
+                    <div>
+                        <h3 class="font-bold text-sm tracking-wider">數位工具落差與技能斷層</h3>
+                        <p class="text-[11px] text-gray-400 mt-1 leading-relaxed">員工不知如何將 AI 落地於日常作業，單點作戰導致整體效率無法規模化提升。</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-lg border-l-4 border-l-yellow-500 flex items-start space-x-3">
+                    <i data-lucide="workflow" class="text-yellow-400 mt-1 flex-shrink-0"></i>
+                    <div>
+                        <h3 class="font-bold text-sm tracking-wider">缺乏自動化與標準化流程</h3>
+                        <p class="text-[11px] text-gray-400 mt-1 leading-relaxed">過度依賴人工經驗，未能將知識與重複性流程轉化為「企業專屬 AI 模組資產」。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-[#00b4d8]/50 to-transparent my-2"></div>
+
+            <h2 class="text-xl font-bold w-full text-left text-white tracking-widest">程曦 AI 賦能解方</h2>
+            
+            <div class="w-full grid grid-cols-2 gap-3">
+                <div class="glass-panel p-3 rounded-lg text-center flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-[#00b4d8]/20 flex items-center justify-center mb-2 border border-[#00b4d8]/30">
+                        <i data-lucide="book-open" class="text-[#00b4d8] w-5 h-5"></i>
+                    </div>
+                    <h4 class="text-xs font-bold tracking-wider">企業數位培訓</h4>
+                    <p class="text-[10px] text-gray-400 mt-1">實戰化 AI 落地教學</p>
+                </div>
+                <div class="glass-panel p-3 rounded-lg text-center flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-[#00b4d8]/20 flex items-center justify-center mb-2 border border-[#00b4d8]/30">
+                        <i data-lucide="network" class="text-[#00b4d8] w-5 h-5"></i>
+                    </div>
+                    <h4 class="text-xs font-bold tracking-wider">企業顧問服務</h4>
+                    <p class="text-[10px] text-gray-400 mt-1">專案伴跑與架構規劃</p>
+                </div>
+                <div class="glass-panel p-3 rounded-lg text-center flex flex-col items-center col-span-2 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#0077b6]/20 to-[#00b4d8]/20 z-0"></div>
+                    <div class="relative z-10 w-10 h-10 rounded-full bg-[#00b4d8]/30 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(0,180,216,0.5)]">
+                        <i data-lucide="layers" class="text-white w-5 h-5"></i>
+                    </div>
+                    <h4 class="text-sm font-bold tracking-wider relative z-10">自動化專案導入</h4>
+                    <p class="text-xs text-gray-300 mt-1 relative z-10">建立專屬案例庫與 Productized Service</p>
+                </div>
+            </div>
+
+            <div class="w-full pt-4">
+                <button onclick="goToHome()" class="w-full bg-transparent border border-gray-500 text-gray-300 font-bold py-3.5 rounded-lg text-sm tracking-widest hover:border-white hover:text-white transition-colors">
+                    完成並返回首頁
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center pb-2 text-[9px] text-gray-600 font-tech z-10 absolute bottom-0 left-0 right-0 tracking-widest">
+            © 2026 CHENXI INFORMATION. ALL RIGHTS RESERVED.
+        </footer>
+    </div>
+
+    <script>
+        // 確保在 DOM 和 Lucide 腳本都載入後才初始化圖示
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            } else {
+                console.warn('Lucide icons 未能載入。');
+            }
+        });
+        
+        let radarChartInstance = null; // 儲存圖表實例以利重繪
+
+        function switchView(hideId, showId) {
+            document.getElementById(hideId).classList.add('view-hidden');
+            const showEl = document.getElementById(showId);
+            showEl.classList.remove('view-hidden');
+            // 重新觸發動畫
+            showEl.classList.remove('fade-in');
+            void showEl.offsetWidth; 
+            showEl.classList.add('fade-in');
+        }
+
+        function goToHome() {
+            ['view-form', 'view-scanning', 'view-result'].forEach(id => {
+                document.getElementById(id).classList.add('view-hidden');
+            });
+            document.getElementById('lead-form').reset();
+            const home = document.getElementById('view-home');
+            home.classList.remove('view-hidden');
+            home.classList.add('fade-in');
+        }
+
+        function goToForm() {
+            switchView('view-home', 'view-form');
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault(); // 防止表單重整頁面
+            const companyName = document.getElementById('company').value;
+            
+            // 進入掃描特效
+            switchView('view-form', 'view-scanning');
+
+            setTimeout(() => document.getElementById('scan-text-1').style.opacity = '1', 600);
+            setTimeout(() => document.getElementById('scan-text-2').style.opacity = '1', 1600);
+            setTimeout(() => document.getElementById('scan-text-3').style.opacity = '1', 2600);
+
+            // 3.8秒後切換至結果畫面，並繪製雷達圖
+            setTimeout(() => {
+                switchView('view-scanning', 'view-result');
+                document.getElementById('scan-text-1').style.opacity = '0';
+                document.getElementById('scan-text-2').style.opacity = '0';
+                document.getElementById('scan-text-3').style.opacity = '0';
+                
+                // 觸發繪製五角雷達圖 (傳入公司名稱)
+                drawRadarChart(companyName);
+            }, 3800);
+        }
+
+        // 繪製科技感五角雷達圖函數
+        function drawRadarChart(companyName) {
+            const ctx = document.getElementById('aiRadarChart').getContext('2d');
+            
+            // 展場模擬模式：隨機生成各項指標分數 (40~95之間)
+            const scores = [
+                Math.floor(Math.random() * 55) + 40, // 數位基礎建設
+                Math.floor(Math.random() * 40) + 30, // 自動化工作流 (通常偏低，帶出痛點)
+                Math.floor(Math.random() * 50) + 30, // 智能客服佈局 (通常偏低，帶出痛點)
+                Math.floor(Math.random() * 55) + 40, // 社群與公關活躍
+                Math.floor(Math.random() * 45) + 35  // AI轉型動能
+            ];
+
+            // 簡單計算平均以給出總評語
+            const avg = scores.reduce((a, b) => a + b) / 5;
+            const summaryText = avg > 65 ? `> [ ${companyName} ] 具備良好基礎，需強化自動化深度` : `> [ ${companyName} ] 亟需 AI 賦能以突破數位瓶頸`;
+            document.getElementById('radar-summary').innerText = summaryText;
+
+            // 銷毀舊圖表（若使用者點擊重新掃描）
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+            }
+
+            // Chart.js 設定
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['數位基礎建設', '自動化工作流', '智能客服佈局', '社群公關活躍', 'AI轉型動能'],
+                    datasets: [{
+                        label: '評估指數',
+                        data: scores,
+                        backgroundColor: 'rgba(0, 180, 216, 0.25)',
+                        borderColor: 'rgba(0, 180, 216, 0.8)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#020617',
+                        pointBorderColor: '#00b4d8',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#00b4d8',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { 
+                                color: 'rgba(255, 255, 255, 0.75)', 
+                                font: { family: 'Noto Sans TC', size: 10, weight: 'bold' } 
+                            },
+                            ticks: { display: false, min: 0, max: 100 } // 隱藏數值刻度，保持科技感
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 17, 40, 0.9)',
+                            titleFont: { family: 'Noto Sans TC', size: 13 },
+                            bodyFont: { family: 'Noto Sans TC', size: 12 },
+                            borderColor: 'rgba(0, 180, 216, 0.5)',
+                            borderWidth: 1
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
